@@ -36,7 +36,7 @@ export class UserService {
 
   async findOneByToken(token: string): Promise<UserEntity | undefined> {
     return this.userRepository.findOneBy({
-      email: Like(token),
+      token: Like(token),
     });
   }
 

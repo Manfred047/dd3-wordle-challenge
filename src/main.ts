@@ -20,6 +20,15 @@ async function bootstrap() {
     .setDescription('DD3 Wordle Challenge')
     .setVersion('1.0')
     .addTag('dd3')
+    .addBearerAuth({
+      name: 'authorization',
+      type: 'apiKey',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      in: 'header',
+      description:
+        'Ingresa el token con el prefijo `Bearer`, ejemplo: Bearer abcde12345',
+    })
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);

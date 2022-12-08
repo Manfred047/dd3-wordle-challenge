@@ -1,4 +1,9 @@
-import { CacheModule, Module } from '@nestjs/common';
+import {
+  CacheModule,
+  MiddlewareConsumer,
+  Module,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -11,6 +16,8 @@ import { DatabaseConfigInterface } from './config/interfaces/database.config.int
 import { DataSource } from 'typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { AuthMiddleware } from './middlewares/auth.middleware';
+import { UserController } from './user/user.controller';
 
 @Module({
   imports: [
@@ -59,4 +66,13 @@ import { AuthModule } from './auth/auth.module';
 })
 export class AppModule {
   constructor(private dataSource: DataSource) {}
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .exclude({
+        path: '/user',
+        method: RequestMethod.POST,
+      })
+      .forRoutes(UserController);
+  }
 }
