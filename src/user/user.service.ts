@@ -6,7 +6,8 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserEntity } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
+import { Helper } from '../helpers/helper';
 
 @Injectable()
 export class UserService {
@@ -25,5 +26,22 @@ export class UserService {
       );
       throw new InternalServerErrorException();
     }
+  }
+
+  async findOneByEmail(email: string): Promise<UserEntity | undefined> {
+    return this.userRepository.findOneBy({
+      email: Like(email),
+    });
+  }
+
+  async findOneByToken(token: string): Promise<UserEntity | undefined> {
+    return this.userRepository.findOneBy({
+      email: Like(token),
+    });
+  }
+
+  async setUserToken(userEntity: UserEntity): Promise<UserEntity> {
+    userEntity.token = Helper.nanoId();
+    return this.userRepository.save(userEntity);
   }
 }

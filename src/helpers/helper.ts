@@ -2,6 +2,7 @@ import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import * as _ from 'lodash';
 import { DateTime } from 'luxon';
 import * as bcrypt from 'bcrypt';
+import { nanoid } from 'nanoid';
 
 const Helper = {
   defaultDateTimeFormat: 'yyyy-MM-dd HH:mm:ss',
@@ -57,6 +58,9 @@ const Helper = {
    */
   async bcryptCompare(password: any, hash: string): Promise<boolean> {
     return bcrypt.compare(password, hash);
+  },
+  nanoId(size = 100): string {
+    return nanoid(size);
   },
 };
 

@@ -37,7 +37,7 @@ export class UserEntity extends BaseEntity implements UserInterface {
   @Column({ type: 'varchar', length: 255, nullable: true, default: null })
   password?: string;
 
-  @Exclude()
+  @Expose({ groups: ['login'] })
   @Column({
     type: 'char',
     length: 100,
@@ -64,6 +64,12 @@ export class UserEntity extends BaseEntity implements UserInterface {
     default: null,
   })
   updatedAt?: string;
+
+  // GETTERS
+  @Expose({ name: 'full_name' })
+  getFullName() {
+    return `${this.name} ${this.lastName}`;
+  }
 
   // ACTIONS
 
