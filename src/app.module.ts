@@ -9,6 +9,7 @@ import { DatabaseConfig } from './config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseConfigInterface } from './config/interfaces/database.config.interface';
 import { DataSource } from 'typeorm';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -42,13 +43,14 @@ import { DataSource } from 'typeorm';
           password: database.password,
           database: database.database,
           entities: ['dist/**/**.entity{.ts,.js}'],
-          synchronize: false,
+          synchronize: true,
           dateStrings: true,
           autoLoadEntities: true,
         };
       },
       inject: [ConfigService],
     }),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

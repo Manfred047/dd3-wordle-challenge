@@ -1,7 +1,10 @@
 import { UnprocessableEntityException, ValidationPipe } from '@nestjs/common';
 import * as _ from 'lodash';
+import { DateTime } from 'luxon';
+import * as bcrypt from 'bcrypt';
 
 const Helper = {
+  defaultDateTimeFormat: 'yyyy-MM-dd HH:mm:ss',
   validationPipe() {
     return new ValidationPipe({
       exceptionFactory: (errors) => {
@@ -29,6 +32,31 @@ const Helper = {
       transform: true,
       whitelist: true,
     });
+  },
+  /**
+   * Obtiene la fecha y hora actual en UTC
+   */
+  getTodayUTCDateTime(): string {
+    return DateTime.now().toUTC().toFormat(this.defaultDateTimeFormat);
+  },
+  /**
+   * Genera un hash para contraseña de forma asincrona
+   * Uso recomendado en back-end
+   *
+   * @param password
+   * @param saltRounds
+   */
+  async bcryptHash(password: any, saltRounds = 10): Promise<string> {
+    return bcrypt.hash(password, saltRounds);
+  },
+  /**
+   * Determina si la contraseña es correcta de forma asincrona
+   *
+   * @param password
+   * @param hash
+   */
+  async bcryptCompare(password: any, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash);
   },
 };
 
