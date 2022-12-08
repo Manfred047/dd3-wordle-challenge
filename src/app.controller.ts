@@ -2,13 +2,15 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginDto } from './auth/dto/login.dto';
 import { AuthService } from './auth/auth.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { WordsService } from './words/words.service';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly authService: AuthService,
+    private readonly wordService: WordsService,
   ) {}
 
   @ApiTags('Auth')
@@ -16,5 +18,16 @@ export class AppController {
   async login(@Body() loginDto: LoginDto) {
     const { email, password } = loginDto;
     return this.authService.login(email, password);
+  }
+
+  @ApiTags('Carga de diccionario')
+  @ApiOperation({
+    summary:
+      'Carga del diccionario de datos, esta operación puede tardar mucho.',
+  })
+  @Post('load-words')
+  async loadWords() {
+    await this.wordService.saveWordDictionary();
+    return { success: 'ok' };
   }
 }

@@ -18,6 +18,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { UserController } from './user/user.controller';
+import { WordsModule } from './words/words.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { UserController } from './user/user.controller';
     }),
     UserModule,
     AuthModule,
+    WordsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
