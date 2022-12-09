@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginDto } from './auth/dto/login.dto';
 import { AuthService } from './auth/auth.service';
@@ -15,6 +15,9 @@ export class AppController {
   ) {}
 
   @ApiTags('Auth')
+  @ApiOperation({
+    summary: 'Inicio de sesión.',
+  })
   @Post('auth/login')
   async login(@Body() loginDto: LoginDto) {
     const { email, password } = loginDto;
@@ -30,6 +33,15 @@ export class AppController {
   async loadWords() {
     await this.wordService.saveWordDictionary();
     return { success: 'ok' };
+  }
+
+  @ApiTags('Game')
+  @ApiOperation({
+    summary: 'Obtiene la palabra activa para el juego.',
+  })
+  @Get('current-word')
+  async getCurrentWord() {
+    return await this.wordService.getCurrentSelectedWord();
   }
 
   @Cron('*/5 * * * *', { name: 'refreshSelectedWord' })

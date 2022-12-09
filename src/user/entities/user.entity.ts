@@ -88,6 +88,13 @@ export class UserEntity extends BaseEntity implements UserInterface {
   })
   updatedAt?: string;
 
+  // CUSTOM FIELDS (NOT IN DATABASE)
+  @Expose({ name: 'num_of_games', groups: ['userChallenges'] })
+  numOfGames?: number;
+
+  @Expose({ name: 'num_of_victories', groups: ['userChallenges'] })
+  numOfVictories?: number;
+
   // GETTERS
   @Expose({ name: 'full_name' })
   getFullName() {

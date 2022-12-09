@@ -8,4 +8,6 @@ export interface UserInterface {
   currentUserChallengeId?: string;
   createdAt?: string;
   updatedAt?: string;
+  numOfGames?: number;
+  numOfVictories?: number;
 }
