@@ -5,6 +5,7 @@ import { UserInterface } from './interfaces/user.interface';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserWordDto } from './dto/user-word.dto';
 import { UserIdDto } from './dto/user-id.dto';
+import { UserEntity } from './entities/user.entity';
 
 @ApiTags('User')
 @Controller('user')
@@ -25,7 +26,7 @@ export class UserController {
   })
   @Get()
   getMyUser(@Request() request: Record<any, any>): UserInterface {
-    return request.$user;
+    return request.$user as UserEntity;
   }
 
   @ApiBearerAuth('access-token')
@@ -37,9 +38,9 @@ export class UserController {
     @Body() userWordDto: UserWordDto,
     @Request() request: Record<any, any>,
   ) {
-    const authUser = request.$user as UserInterface;
+    const authUser = request.$user as UserEntity;
     const { userWord } = userWordDto;
-    return this.userService.compareUserWords(userWord);
+    return this.userService.getCurrentGameResult(authUser, userWord);
   }
 
   @ApiBearerAuth('access-token')

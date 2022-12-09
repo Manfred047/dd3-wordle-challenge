@@ -5,8 +5,7 @@ import {
 } from '@nestjs/common';
 import * as _ from 'lodash';
 import { AuthService } from '../auth/auth.service';
-import { instanceToPlain } from 'class-transformer';
-import { UserInterface } from '../user/interfaces/user.interface';
+import { UserEntity } from '../user/entities/user.entity';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
@@ -22,12 +21,12 @@ export class AuthMiddleware implements NestMiddleware {
     return _.get(token.split(' '), [1], '');
   }
 
-  async verifyAuth(req: any): Promise<UserInterface> {
+  async verifyAuth(req: any): Promise<UserEntity> {
     const token = this.getBearerTokenFromHeader(req);
     const userEntity = await this.authService.validateToken(token);
     if (_.isEmpty(userEntity)) {
       throw new UnauthorizedException('Unauthenticated', 'unauthenticated');
     }
-    return instanceToPlain(userEntity) as UserInterface;
+    return userEntity;
   }
 }

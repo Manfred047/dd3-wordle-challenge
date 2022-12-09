@@ -5,11 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { WordsModule } from '../words/words.module';
 import { UserChallengesEntity } from './entities/user-challenges.entity';
+import { CurrentUserChallengesEntity } from './entities/current-user-challenges.entity';
 
 @Module({
   controllers: [UserController],
   imports: [
-    TypeOrmModule.forFeature([UserEntity, UserChallengesEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      UserChallengesEntity,
+      CurrentUserChallengesEntity,
+    ]),
     WordsModule,
   ],
   providers: [UserService],

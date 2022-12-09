@@ -77,6 +77,16 @@ export class AppModule {
         path: '/user',
         method: RequestMethod.POST,
       })
-      .forRoutes(UserController);
+      .forRoutes(
+        {
+          path: '/current-word/',
+          method: RequestMethod.GET,
+        },
+        {
+          path: '/current-word/',
+          method: RequestMethod.GET,
+        },
+        UserController,
+      );
   }
 }

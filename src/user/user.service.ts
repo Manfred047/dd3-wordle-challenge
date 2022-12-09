@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserEntity } from './entities/user.entity';
@@ -16,6 +17,7 @@ import { instanceToPlain } from 'class-transformer';
 import { UserInterface } from './interfaces/user.interface';
 import { TopPlayersInterface } from '../words/interfaces/top-players.interface';
 import { TopWordsInterface } from '../words/interfaces/top-words.interface';
+import { CurrentUserChallengesEntity } from './entities/current-user-challenges.entity';
 
 @Injectable()
 export class UserService {
@@ -24,6 +26,8 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserChallengesEntity)
     private readonly userChallengesRepository: Repository<UserChallengesEntity>,
+    @InjectRepository(CurrentUserChallengesEntity)
+    private readonly currentUserChallengesRepository: Repository<CurrentUserChallengesEntity>,
     private readonly wordsService: WordsService,
   ) {}
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
@@ -56,30 +60,109 @@ export class UserService {
     return this.userRepository.save(userEntity);
   }
 
-  async compareUserWords(userWord: string) {
-    const selectedWordEntity = await this.wordsService.getCurrentSelectedWord();
-    const currentWordArray = _.split(selectedWordEntity.word, '');
-    const userWordArray = _.split(userWord, '');
-    const userWordArraySize = _.size(userWordArray);
-    console.log(currentWordArray);
-    _.forEach(userWord, (word, key) => {
-      const currentWordIdx = _.findIndex(
-        selectedWordEntity.word,
-        (cwa) => cwa === word,
+  async getOrCreateCurrentUserChallenge(
+    authUser: UserEntity,
+    currentSelectedWord: string,
+  ) {
+    let currentUserChallenge: CurrentUserChallengesEntity;
+    if (!authUser.currentUserChallengeId) {
+      const userEntity = await this.userRepository.findOneBy({
+        id: Like(authUser.id),
+      });
+      const userChallenge = await this.createUserChallenge(
+        userEntity.id,
+        currentSelectedWord,
       );
-      // console.log(word, key);
-      console.log(currentWordIdx);
+      currentUserChallenge = new CurrentUserChallengesEntity({
+        attempt: 0,
+        userChallengeId: userChallenge.id,
+      });
+      currentUserChallenge = await this.currentUserChallengesRepository.save(
+        currentUserChallenge,
+      );
+      userEntity.currentUserChallengeId = currentUserChallenge.id;
+      await this.userRepository.save(userEntity);
+      return currentUserChallenge;
+    }
+    currentUserChallenge = await this.currentUserChallengesRepository.findOneBy(
+      {
+        id: Like(authUser.currentUserChallengeId),
+      },
+    );
+    if (!currentUserChallenge.userChallengeId) {
+      const userChallenge = await this.createUserChallenge(
+        authUser.id,
+        currentSelectedWord,
+      );
+      currentUserChallenge.userChallengeId = userChallenge.id;
+      currentUserChallenge = await this.currentUserChallengesRepository.save(
+        currentUserChallenge,
+      );
+    }
+    return currentUserChallenge;
+  }
+
+  async createUserChallenge(
+    userId: string,
+    currentSelectedWord: string,
+  ): Promise<UserChallengesEntity> {
+    const userChallengesEntity = new UserChallengesEntity({
+      userId: userId,
+      word: currentSelectedWord,
     });
-    /*for (let i = 0; i < userWordArraySize; i++) {
-      const userLetter = userWordArray[i];
-      console.log(userLetter);
-      const currentWordIdx = _.findIndex(
+    const userChallenge = await this.userChallengesRepository.save(
+      userChallengesEntity,
+    );
+    return userChallenge;
+  }
+
+  async setUserChallengeVictory(
+    userChallengeId: string,
+    isVictory: number,
+  ): Promise<UserChallengesEntity> {
+    const userChallengeEntity = await this.userChallengesRepository.findOneBy({
+      id: Like(userChallengeId),
+    });
+    userChallengeEntity.isVictory = isVictory;
+    return await this.userChallengesRepository.save(userChallengeEntity);
+  }
+
+  async getCurrentGameResult(authUser: UserEntity, userWord: string) {
+    const selectedWordEntity = await this.wordsService.getCurrentSelectedWord();
+    const currentUserChallengeEntity =
+      await this.getOrCreateCurrentUserChallenge(
+        authUser,
         selectedWordEntity.word,
-        (cwa) => cwa === userLetter,
       );
-      console.log(currentWordIdx);
-    }*/
-    return userWordArraySize;
+
+    if (currentUserChallengeEntity.attempt >= 5) {
+      await this.setUserChallengeVictory(
+        currentUserChallengeEntity.userChallengeId,
+        0,
+      );
+      throw new UnauthorizedException('Max attempts', 'max_attempts');
+    }
+
+    const attempt = 1;
+    const wordResponse = Helper.compareUserWords(
+      selectedWordEntity.word,
+      userWord,
+    );
+
+    const isVictory = Helper.isVictory(wordResponse);
+
+    if (isVictory) {
+      await this.setUserChallengeVictory(
+        currentUserChallengeEntity.userChallengeId,
+        1,
+      );
+    }
+
+    currentUserChallengeEntity.attempt =
+      currentUserChallengeEntity.attempt + attempt;
+    await this.currentUserChallengesRepository.save(currentUserChallengeEntity);
+
+    return wordResponse;
   }
 
   async summaryUserChallenges(userId: string): Promise<UserInterface> {

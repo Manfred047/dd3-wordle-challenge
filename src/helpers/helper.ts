@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import { DateTime } from 'luxon';
 import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
+import { WordGameResultInterface } from '../words/interfaces/word-game-result.interface';
 
 const Helper = {
   defaultDateTimeFormat: 'yyyy-MM-dd HH:mm:ss',
@@ -61,6 +62,60 @@ const Helper = {
   },
   nanoId(size = 100): string {
     return nanoid(size);
+  },
+  normalize(word: string, lowerCase = true): string {
+    const normalize = word.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    if (lowerCase) {
+      return normalize.toLowerCase();
+    }
+    return normalize;
+  },
+  compareUserWords(
+    currentSelectedWord: string,
+    userWord: string,
+  ): WordGameResultInterface[] {
+    const normalizeCurrentSelectedWord = this.normalize(currentSelectedWord);
+    const normalizeUserWord = this.normalize(userWord);
+    const wordResponse: WordGameResultInterface[] = [];
+    if (_.eq(normalizeCurrentSelectedWord, normalizeUserWord)) {
+      _.forEach(normalizeUserWord, (character: string) => {
+        wordResponse.push({
+          letter: character,
+          value: 1,
+        });
+      });
+      return wordResponse;
+    }
+    _.forEach(normalizeUserWord, (character: string, key: number) => {
+      let value = 3;
+      const hasCharacter = _.find(
+        normalizeCurrentSelectedWord,
+        (letter: string) => {
+          return _.eq(letter, character);
+        },
+      );
+      const sameSite = _.eq(
+        _.nth(normalizeCurrentSelectedWord, key),
+        character,
+      );
+      if (hasCharacter) {
+        value = sameSite ? 1 : 2;
+      }
+      wordResponse.push({
+        letter: character,
+        value,
+      });
+    });
+    return wordResponse;
+  },
+  isVictory(wordGameResult: WordGameResultInterface[]): boolean {
+    let isVictory = true;
+    _.forEach(wordGameResult, (result: WordGameResultInterface) => {
+      if (result.value !== 1) {
+        isVictory = false;
+      }
+    });
+    return isVictory;
   },
 };
 
