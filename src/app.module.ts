@@ -19,9 +19,11 @@ import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { UserController } from './user/user.controller';
 import { WordsModule } from './words/words.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     CacheModule.register({
       isGlobal: true,
     }),

@@ -4,6 +4,7 @@ import { LoginDto } from './auth/dto/login.dto';
 import { AuthService } from './auth/auth.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { WordsService } from './words/words.service';
+import { Cron } from '@nestjs/schedule';
 
 @Controller()
 export class AppController {
@@ -29,5 +30,10 @@ export class AppController {
   async loadWords() {
     await this.wordService.saveWordDictionary();
     return { success: 'ok' };
+  }
+
+  @Cron('*/5 * * * *', { name: 'refreshSelectedWord' })
+  async refreshSelectedWord(): Promise<void> {
+    await this.wordService.regenerateSelectedWord();
   }
 }
