@@ -5,6 +5,7 @@ export interface UserInterface {
   lastName: string;
   password?: string;
   token?: string;
+  currentUserChallengeId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

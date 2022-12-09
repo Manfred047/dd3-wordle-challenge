@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WordEntity } from './entities/word.entity';
-import { DeleteResult, Repository, Not, Like } from 'typeorm';
+import { DeleteResult, Repository, Like, UpdateResult } from 'typeorm';
 import { WordInterface } from './interfaces/word.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
 import { SelectedWordEntity } from './entities/selected-word.entity';
+import { CurrentUserChallengesEntity } from '../user/entities/current-user-challenges.entity';
+import { UserChallengesEntity } from '../user/entities/user-challenges.entity';
 
 @Injectable()
 export class WordsService {
@@ -15,6 +17,10 @@ export class WordsService {
     private readonly wordRepository: Repository<WordEntity>,
     @InjectRepository(SelectedWordEntity)
     private readonly selectedWordRepository: Repository<SelectedWordEntity>,
+    @InjectRepository(CurrentUserChallengesEntity)
+    private readonly currentUserChallengesRepository: Repository<CurrentUserChallengesEntity>,
+    @InjectRepository(UserChallengesEntity)
+    private readonly userChallengesRepository: Repository<UserChallengesEntity>,
   ) {}
 
   /**
@@ -68,6 +74,36 @@ export class WordsService {
     return await this.selectedWordRepository.save(selectedWordEntity);
   }
 
+  async getCurrentUserChallenges(): Promise<CurrentUserChallengesEntity[]> {
+    return await this.currentUserChallengesRepository.find();
+  }
+
+  async resetCurrentUserChallenges(): Promise<UpdateResult> {
+    return await this.currentUserChallengesRepository
+      .createQueryBuilder('currentUserChallenge')
+      .update()
+      .set({ userChallengeId: null, attempt: 0, user_word: null })
+      .execute();
+  }
+
+  async setUserChallengeByReset(
+    userChallengeId: string,
+  ): Promise<UserChallengesEntity> {
+    const userChallengeEntity = await this.getUserChallengeById(
+      userChallengeId,
+    );
+    userChallengeEntity.isVictory = 0;
+    return await this.userChallengesRepository.save(userChallengeEntity);
+  }
+
+  async getUserChallengeById(
+    userChallengeId: string,
+  ): Promise<UserChallengesEntity | null> {
+    return await this.userChallengesRepository.findOneBy({
+      id: Like(userChallengeId),
+    });
+  }
+
   async getNewWord(
     currentSelectedWord: string,
     wordLength = 5,
@@ -91,5 +127,12 @@ export class WordsService {
     const wordEntity = await this.getNewWord(currentSelectedWord.word);
     await this.deleteSelectedWords();
     await this.saveSelectedWord(wordEntity.word);
+    const currentUserChallenges = await this.getCurrentUserChallenges();
+    await this.resetCurrentUserChallenges();
+    const currentUserChallengesSize = _.size(currentUserChallenges);
+    for (let i = 0; i < currentUserChallengesSize; i++) {
+      const userChallengeId = currentUserChallenges[i].userChallengeId;
+      await this.setUserChallengeByReset(userChallengeId);
+    }
   }
 }

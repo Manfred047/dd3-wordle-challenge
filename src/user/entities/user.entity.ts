@@ -4,11 +4,16 @@ import {
   BeforeUpdate,
   Column,
   Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserInterface } from '../interfaces/user.interface';
 import { Exclude, Expose } from 'class-transformer';
 import { Helper } from '../../helpers/helper';
+import { UserChallengesEntity } from './user-challenges.entity';
+import { CurrentUserChallengesEntity } from './current-user-challenges.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity implements UserInterface {
@@ -34,11 +39,18 @@ export class UserEntity extends BaseEntity implements UserInterface {
   lastName!: string;
 
   @Exclude()
-  @Column({ type: 'varchar', length: 255, nullable: true, default: null })
+  @Column({
+    name: 'password',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    default: null,
+  })
   password?: string;
 
   @Expose({ groups: ['login'] })
   @Column({
+    name: 'token',
     type: 'char',
     length: 100,
     unique: true,
@@ -46,6 +58,17 @@ export class UserEntity extends BaseEntity implements UserInterface {
     default: null,
   })
   token?: string;
+
+  @Expose({ name: 'current_user_challenge_id' })
+  @Column({
+    name: 'current_user_challenge_id',
+    type: 'varchar',
+    length: 36,
+    unique: true,
+    nullable: true,
+    default: null,
+  })
+  currentUserChallengeId?: string;
 
   @Expose({ name: 'created_at' })
   @Column({
@@ -70,6 +93,20 @@ export class UserEntity extends BaseEntity implements UserInterface {
   getFullName() {
     return `${this.name} ${this.lastName}`;
   }
+
+  // RELATIONS
+
+  @Expose({ name: 'user_challenges' })
+  @OneToMany(
+    () => UserChallengesEntity,
+    (userChallengesEntity) => userChallengesEntity.user,
+  )
+  userChallenges!: UserChallengesEntity[];
+
+  @Expose({ name: 'current_user_challenge' })
+  @OneToOne(() => CurrentUserChallengesEntity)
+  @JoinColumn({ name: 'current_user_challenge_id' })
+  currentUserChallenge?: CurrentUserChallengesEntity;
 
   // ACTIONS
 
