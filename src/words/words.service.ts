@@ -9,9 +9,12 @@ import * as _ from 'lodash';
 import { SelectedWordEntity } from './entities/selected-word.entity';
 import { CurrentUserChallengesEntity } from '../user/entities/current-user-challenges.entity';
 import { UserChallengesEntity } from '../user/entities/user-challenges.entity';
+import { ConfigService } from '@nestjs/config';
+import { DatabaseConfigInterface } from '../config/interfaces/database.config.interface';
 
 @Injectable()
 export class WordsService {
+  private readonly databaseConfig: DatabaseConfigInterface;
   constructor(
     @InjectRepository(WordEntity)
     private readonly wordRepository: Repository<WordEntity>,
@@ -21,7 +24,11 @@ export class WordsService {
     private readonly currentUserChallengesRepository: Repository<CurrentUserChallengesEntity>,
     @InjectRepository(UserChallengesEntity)
     private readonly userChallengesRepository: Repository<UserChallengesEntity>,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.databaseConfig =
+      this.configService.get<DatabaseConfigInterface>('database');
+  }
 
   /**
    * Lee la información del diccionario y la prepara para su inserción en base de datos
@@ -108,6 +115,8 @@ export class WordsService {
     currentSelectedWord: string,
     wordLength = 5,
   ): Promise<WordEntity> {
+    const randString =
+      this.databaseConfig.type === 'postgres' ? 'RANDOM()' : 'RAND()';
     return await this.wordRepository
       .createQueryBuilder('selectedWord')
       .select()
@@ -115,7 +124,7 @@ export class WordsService {
         currentSelectedWord,
       })
       .andWhere('LENGTH(selectedWord.word) = :wordLength', { wordLength })
-      .orderBy('RAND()')
+      .orderBy(randString)
       .limit(1)
       .getOne();
   }
