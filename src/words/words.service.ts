@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WordEntity } from './entities/word.entity';
-import { DeleteResult, Repository, Like, UpdateResult } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { WordInterface } from './interfaces/word.interface';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -107,7 +107,7 @@ export class WordsService {
     userChallengeId: string,
   ): Promise<UserChallengesEntity | null> {
     return await this.userChallengesRepository.findOneBy({
-      id: Like(userChallengeId),
+      id: userChallengeId,
     });
   }
 

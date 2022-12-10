@@ -67,7 +67,7 @@ export class UserService {
     let currentUserChallenge: CurrentUserChallengesEntity;
     if (!authUser.currentUserChallengeId) {
       const userEntity = await this.userRepository.findOneBy({
-        id: Like(authUser.id),
+        id: authUser.id,
       });
       const userChallenge = await this.createUserChallenge(
         userEntity.id,
@@ -86,7 +86,7 @@ export class UserService {
     }
     currentUserChallenge = await this.currentUserChallengesRepository.findOneBy(
       {
-        id: Like(authUser.currentUserChallengeId),
+        id: authUser.currentUserChallengeId,
       },
     );
     if (!currentUserChallenge.userChallengeId) {
@@ -121,7 +121,7 @@ export class UserService {
     isVictory: number,
   ): Promise<UserChallengesEntity> {
     const userChallengeEntity = await this.userChallengesRepository.findOneBy({
-      id: Like(userChallengeId),
+      id: userChallengeId,
     });
     userChallengeEntity.isVictory = isVictory;
     return await this.userChallengesRepository.save(userChallengeEntity);
@@ -167,7 +167,7 @@ export class UserService {
 
   async summaryUserChallenges(userId: string): Promise<UserInterface> {
     const userEntity = await this.userRepository.findOneBy({
-      id: Like(userId),
+      id: userId,
     });
     if (_.isEmpty(userEntity)) {
       throw new NotFoundException('User not found', 'user_not_found');
@@ -181,13 +181,13 @@ export class UserService {
 
   async getUserNumOfGames(userId: string): Promise<number> {
     return await this.userChallengesRepository.countBy({
-      userId: Like(userId),
+      userId: userId,
     });
   }
 
   async getCountUserVictories(userId: string): Promise<number> {
     return await this.userChallengesRepository.countBy({
-      userId: Like(userId),
+      userId: userId,
       isVictory: 1,
     });
   }
@@ -195,11 +195,11 @@ export class UserService {
   async getTopPlayers(): Promise<TopPlayersInterface[]> {
     const userChallenges = await this.userChallengesRepository
       .createQueryBuilder('userChallenges')
-      .select('CONCAT(user.name, " ", user.last_name) as full_name')
+      .select(`CONCAT(user.name, ' ', user.last_name) as full_name`)
       .addSelect('COUNT(userChallenges.is_victory) as num_of_victories')
       .innerJoinAndSelect('userChallenges.user', 'user')
       .where('userChallenges.is_victory = :isVictory', { isVictory: 1 })
-      .groupBy('userChallenges.user_id')
+      .groupBy('user.id')
       .orderBy('num_of_victories', 'DESC')
       .limit(10)
       .getRawMany();
