@@ -49,7 +49,7 @@ export class WordsService {
 
   async saveWordDictionary(): Promise<void> {
     const words = this.parseWordFile();
-    const wordChunks = _.chunk(words, 20);
+    const wordChunks = _.chunk(words, 200);
     const chunkSize = _.size(wordChunks);
     for (let i = 0; i < chunkSize; i++) {
       const wordDictToSave = wordChunks[i];

@@ -63,7 +63,6 @@ export class UserEntity extends BaseEntity implements UserInterface {
   @Column({
     name: 'current_user_challenge_id',
     type: 'varchar',
-    length: 36,
     unique: true,
     nullable: true,
     default: null,
@@ -73,7 +72,7 @@ export class UserEntity extends BaseEntity implements UserInterface {
   @Expose({ name: 'created_at' })
   @Column({
     name: 'created_at',
-    type: 'datetime',
+    type: 'timestamp',
     nullable: true,
     default: null,
   })
@@ -82,7 +81,7 @@ export class UserEntity extends BaseEntity implements UserInterface {
   @Expose({ name: 'updated_at' })
   @Column({
     name: 'updated_at',
-    type: 'datetime',
+    type: 'timestamp',
     nullable: true,
     default: null,
   })

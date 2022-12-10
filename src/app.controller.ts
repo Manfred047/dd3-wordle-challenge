@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginDto } from './auth/dto/login.dto';
 import { AuthService } from './auth/auth.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { WordsService } from './words/words.service';
 import { Cron } from '@nestjs/schedule';
 
@@ -35,6 +35,7 @@ export class AppController {
     return { success: 'ok' };
   }
 
+  @ApiBearerAuth('access-token')
   @ApiTags('Game')
   @ApiOperation({
     summary: 'Obtiene la palabra activa para el juego.',

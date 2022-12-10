@@ -33,14 +33,13 @@ export class CurrentUserChallengesEntity
   @Column({
     name: 'user_challenge_id',
     type: 'varchar',
-    length: 255,
     nullable: true,
     default: null,
   })
   userChallengeId?: string;
 
   @Expose({ name: 'attempt' })
-  @Column({ type: 'tinyint', width: 1, default: 0 })
+  @Column({ type: 'smallint', width: 1, default: 0 })
   attempt: number;
 
   // RELATIONS

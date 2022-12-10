@@ -30,13 +30,13 @@ export class UserChallengesEntity
   id!: string;
 
   @Expose({ name: 'user_id' })
-  @Column({ name: 'user_id', type: 'varchar', length: 36 })
+  @Column({ name: 'user_id', type: 'varchar' })
   userId!: string;
 
   @Expose({ name: 'is_victory' })
   @Column({
     name: 'is_victory',
-    type: 'tinyint',
+    type: 'smallint',
     width: 1,
     nullable: true,
     default: null,
@@ -50,7 +50,7 @@ export class UserChallengesEntity
   @Expose({ name: 'created_at' })
   @Column({
     name: 'created_at',
-    type: 'datetime',
+    type: 'timestamp',
     nullable: true,
     default: null,
   })
@@ -59,7 +59,7 @@ export class UserChallengesEntity
   @Expose({ name: 'updated_at' })
   @Column({
     name: 'updated_at',
-    type: 'datetime',
+    type: 'timestamp',
     nullable: true,
     default: null,
   })

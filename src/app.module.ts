@@ -46,8 +46,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       useFactory(configService: ConfigService) {
         const database: DatabaseConfigInterface =
           configService.get<DatabaseConfigInterface>('database');
-        return {
-          type: 'mysql',
+        const defaultConfig = {
           host: database.host,
           port: database.port,
           username: database.username,
@@ -55,8 +54,18 @@ import { ScheduleModule } from '@nestjs/schedule';
           database: database.database,
           entities: ['dist/**/**.entity{.ts,.js}'],
           synchronize: true,
-          dateStrings: true,
           autoLoadEntities: true,
+        };
+        if (database.type === 'postgres') {
+          return {
+            type: 'postgres',
+            ...defaultConfig,
+          };
+        }
+        return {
+          type: 'mysql',
+          ...defaultConfig,
+          dateStrings: true,
         };
       },
       inject: [ConfigService],
