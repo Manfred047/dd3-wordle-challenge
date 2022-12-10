@@ -2,10 +2,10 @@
 
 Prueba de DD3
 
-## Installation
-
 ## Enviroment
 ### Se requiere de un archivo .env, los valores se pueden tomar del .env.example
+
+## Installation
 
 ```bash
 $ npm install
